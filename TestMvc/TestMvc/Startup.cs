@@ -57,7 +57,7 @@ namespace TestMvc
             {
                 routes.MapRoute(
                     name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                    template: "{controller=ShortenUrl}/{action=Index}/{id?}");
             });
         }
     }

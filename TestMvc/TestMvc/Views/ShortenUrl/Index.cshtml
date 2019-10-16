@@ -1,0 +1,44 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@model TestMvc.Models.ShortenUrlModel
+
+
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <h1>Generate Shorten Url</h1>
+    </div>
+
+    <form class="mt-5" asp-action="Index">
+        <div class="input-group-text">
+            <div class="input-group-append">
+                <span class="input-group-text">FullUrl</span>
+            </div>
+            <input type="text" class="form-control" placeholder="Full Url" asp-for="@Model.FullUrl">
+        </div>
+        <div class="input-group-text">
+            <div class="input-group-append">
+                <span class="input-group-text">Custom</span>
+            </div>
+            <input type="text" class="form-control" placeholder="CustomUrl" asp-for="@Model.CustomUrl" />
+        </div>
+        <div class="row justify-content-center mt-3">
+            <button class="btn btn-outline-success btn-lg " type="submit">Genereate</button>
+        </div>
+    </form>
+
+    <div class="card">
+        <div class="card-header">
+            <h2>Short Url</h2>
+        </div>
+        <div class="card-body">
+            @ViewBag.showMessage
+        </div>
+    </div>
+</div>
+
+
