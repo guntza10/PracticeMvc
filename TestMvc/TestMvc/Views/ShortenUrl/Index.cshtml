@@ -4,9 +4,7 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-@model TestMvc.Models.ShortenUrlModel
-
-
+@model TestMvc.Models.IndexViewModel
 
 <div class="container-fluid">
     <div class="row justify-content-center">
@@ -18,27 +16,113 @@
             <div class="input-group-append">
                 <span class="input-group-text">FullUrl</span>
             </div>
-            <input type="text" class="form-control" placeholder="Full Url" asp-for="@Model.FullUrl">
+            <input type="text" class="form-control" placeholder="Full Url" asp-for="@Model.shortUrlModel.FullUrl">
         </div>
         <div class="input-group-text">
             <div class="input-group-append">
-                <span class="input-group-text">Custom</span>
+                <span class="input-group-text">https://testgun.azurewebsites.net/</span>
             </div>
-            <input type="text" class="form-control" placeholder="CustomUrl" asp-for="@Model.CustomUrl" />
+            <input type="text" class="form-control" placeholder="CustomUrl" asp-for="@Model.shortUrlModel.Custom" />
         </div>
-        <div class="row justify-content-center mt-3">
+        <div class="row justify-content-center m-3">
             <button class="btn btn-outline-success btn-lg " type="submit">Genereate</button>
         </div>
     </form>
 
     <div class="card">
         <div class="card-header">
-            <h2>Short Url</h2>
+            <h3>Short Url</h3>
         </div>
         <div class="card-body">
-            @ViewBag.showMessage
+            @if (Model.alertMessage != null && Model.colorAlert == true)
+            {
+                <label class="text-danger">
+                    @Model.alertMessage
+                </label>
+            }
+            @if (Model.alertMessage != null && Model.colorAlert == false)
+            {
+                <div class="input-group m-2">
+                    <input class="form-control" type="text" id="shortUrl" readonly="readonly" value="@Model.alertMessage" />
+                    <div class="input-group-append">
+                        <button class="btn btn-success" type="button" onclick="copyUrl(shortUrl)">Copy Url</button>
+                    </div>
+                </div>
+            }
         </div>
     </div>
+
+    <div class="card mt-3">
+        <div class="card-header">
+            <h3>History</h3>
+        </div>
+        <div class="card-body">
+
+            <table class="table">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Full Url</th>
+                        <th>Short Url</th>
+                        <th></th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var item in Model.history)
+                    {
+                        <tr>
+                            <th> @item.FullUrl </th>
+                            <td>
+                                <div class="input-group m-2">
+                                    <input class="form-control" type="text" id="short-@item.Id" readonly="readonly" value="@item.ShortenUrl" />
+                                    <div class="input-group-append">
+                                        <button class="btn btn-success" type="button" onclick="copyUrl(short-@item.Id)">Copy Url</button>
+                                    </div>
+                                </div>
+                            </td>
+                            <td></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
+
+
+
 </div>
 
+@section Scripts {
+    <script type="text/javascript">
+        function copyUrl(shortId) {
+            var copyText = document.getElementById(shortId.value);;
+            /* Select the text field */
+            copyText.select();
+            copyText.setSelectionRange(0, 99999); /*For mobile devices*/
 
+            /* Copy the text inside the text field */
+            document.execCommand("copy");
+
+            /* Alert the copied text */
+            alert(`Copied Url Already: ${copyText.value}`);
+        }
+    </script>
+}
+
+
+@*<script type="text/javascript">
+        function copyUrl12() {
+            var copyText = document.getElementById("#short-@item.Id");;
+            /* Select the text field */
+            copyText.select();
+            copyText.setSelectionRange(0, 99999); /*For mobile devices*/
+
+            /* Copy the text inside the text field */
+            document.execCommand("copy");
+
+            /* Alert the copied text */
+            alert(`Copied Url Already: ${copyText.value}`);
+        }
+    </script>*@

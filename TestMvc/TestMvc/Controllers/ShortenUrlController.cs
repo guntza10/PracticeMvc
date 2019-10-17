@@ -17,52 +17,149 @@ namespace TestMvc.Controllers
             var database = client.GetDatabase("shortenurl");
             ShortenCollection = database.GetCollection<ShortenUrlModel>("shorten");
         }
+
         public IActionResult Index()
         {
+            var historyResult = ShortenCollection.Find(it => true).SortByDescending(it => it.CreationDateTime).ToList();
+            return View(new IndexViewModel
+            {
+                history = historyResult,
+
+            });
+        }
+
+        [HttpGet("{url}")]
+        public IActionResult Index(string url)
+        {
+            var result = ShortenCollection.Find(it => it.ShortenUrl.Contains(url)).FirstOrDefault();
+            if (result != null)
+            {
+                return Redirect(result.FullUrl);
+            }
             return View();
         }
 
         [HttpPost]
-        public IActionResult Index([FromForm]ShortenUrlModel model)
+        public IActionResult Index([FromForm]IndexViewModel model)
         {
             const string charT = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            var data = new ShortenUrlModel();
             var rnd = new Random();
-            if (!String.IsNullOrEmpty(model.FullUrl))
+            model.colorAlert = false;
+            if (!String.IsNullOrEmpty(model.shortUrlModel.FullUrl))
             {
-                var isFullUrlExist = ShortenCollection.Find(it => it.FullUrl == model.FullUrl).ToList();
-                var cusUrl = (String.IsNullOrEmpty(model.CustomUrl)) ? "" : model.CustomUrl;
-                var isCustomExited = ShortenCollection.Find(it => it.ShortUrl.ToLower().Contains(cusUrl.ToLower())).ToList();
-                if (!isFullUrlExist.Any() && !isCustomExited.Any())
+                var isFullUrlExist = ShortenCollection.Find(it => it.FullUrl == model.shortUrlModel.FullUrl).ToList();
+                var randomPrefix = Enumerable.Repeat(charT, 8)
+                        .Select(it => it[rnd.Next(charT.Length)]);
+                var randomForShorten = String.Join("", randomPrefix);
+                var newUrl = (String.IsNullOrEmpty(model.shortUrlModel.Custom)) ? $"https://testgun.azurewebsites.net/{randomForShorten}"
+                    : $"https://testgun.azurewebsites.net/{model.shortUrlModel.Custom}";
+
+                if (isFullUrlExist.Any() && String.IsNullOrEmpty(model.shortUrlModel.Custom))
                 {
-                    var randomPrefix = Enumerable.Repeat(charT, 8)
-                   .Select(it => it[rnd.Next(charT.Length)]);
-                    var randomForShorten = String.Join("", randomPrefix);
-                    var newUrl = (String.IsNullOrEmpty(model.CustomUrl)) ? $"https://testgun.azurewebsites.net/{randomForShorten}"
-                        : $"https://testgun.azurewebsites.net/{model.CustomUrl}";
-                    var newData = new ShortenUrlModel
+                    model.alertMessage = isFullUrlExist.FirstOrDefault().ShortenUrl;
+                }
+                else if (isFullUrlExist.Any() && !String.IsNullOrEmpty(model.shortUrlModel.Custom))
+                {
+                    model.alertMessage = "Full Url be generated,can't generate!";
+                    model.colorAlert = true;
+                }
+                else if (!isFullUrlExist.Any() && !String.IsNullOrEmpty(model.shortUrlModel.Custom))
+                {
+                    try
                     {
-                        Id = Guid.NewGuid().ToString(),
-                        FullUrl = model.FullUrl,
-                        ShortUrl = newUrl,
-                        CustomUrl = model.CustomUrl,
-                        CreationDateTime = DateTime.Now
-                    };
-                    ShortenCollection.InsertOne(newData);
+                        var isCustomExited = ShortenCollection.Find(it => it.ShortenUrl.ToLower().Contains(model.shortUrlModel.Custom.ToLower())).ToList();
+                        if (!isCustomExited.Any())
+                        {
+                            var newData = new ShortenUrlModel
+                            {
+                                Id = Guid.NewGuid().ToString(),
+                                FullUrl = model.shortUrlModel.FullUrl,
+                                ShortenUrl = newUrl,
+                                Custom = model.shortUrlModel.Custom,
+                                CreationDateTime = DateTime.Now
+                            };
+                            ShortenCollection.InsertOne(newData);
+                            model.alertMessage = newUrl;
+                        }
+                        else
+                        {
+                            model.alertMessage = "Can't be generate becaues url be used";
+                            model.colorAlert = true;
+                        }
+                    }
+                    catch (Exception err)
+                    {
+                        throw err;
+                    }
                 }
-                else if (isFullUrlExist.Any() && String.IsNullOrEmpty(model.CustomUrl))
+                else if (!isFullUrlExist.Any() && String.IsNullOrEmpty(model.shortUrlModel.Custom))
                 {
-                    ViewBag.showMessage = isFullUrlExist.FirstOrDefault().FullUrl;
-                }
-                else if (isFullUrlExist.Any() && !String.IsNullOrEmpty(model.CustomUrl))
-                {
-                    ViewBag.showMessage = "Can't be generate becaues url be used";
+                    try
+                    {
+                        var isCustomExited = ShortenCollection.Find(it => it.ShortenUrl.ToLower().Contains(randomForShorten.ToLower())).ToList();
+                        if (!isCustomExited.Any())
+                        {
+                            var newData = new ShortenUrlModel
+                            {
+                                Id = Guid.NewGuid().ToString(),
+                                FullUrl = model.shortUrlModel.FullUrl,
+                                ShortenUrl = newUrl,
+                                Custom = model.shortUrlModel.Custom,
+                                CreationDateTime = DateTime.Now
+                            };
+                            ShortenCollection.InsertOne(newData);
+                            model.alertMessage = newUrl;
+                        }
+                        else
+                        {
+                            model.alertMessage = "Can't be generate becaues url be used";
+                            model.colorAlert = true;
+                        }
+                    }
+                    catch (Exception err)
+                    {
+                        throw err;
+                    }
                 }
             }
             else
             {
-                ViewBag.showMessage = "Please input Full Url";
+                model.alertMessage = "Please input Full Url";
+                model.colorAlert = true;
+                data = new ShortenUrlModel();
             }
-            return View();
+            var historyResult = ShortenCollection.Find(it => true).SortByDescending(it => it.CreationDateTime).ToList();
+            return View(new IndexViewModel
+            {
+                shortUrlModel = data,
+                alertMessage = model.alertMessage,
+                colorAlert = model.colorAlert,
+                history = historyResult
+
+            });
+            //return RedirectToAction("Index", new { shModel = data, message = model.alertMessage, color = model.colorAlert });
         }
+
+        //public IActionResult Index(ShortenUrlModel shModel, string message, bool color)
+        //{
+        //    var historyResult = ShortenCollection.Find(it => true).SortByDescending(it => it.CreationDateTime).ToList();
+        //    return View(new IndexViewModel
+        //    {
+        //        shortUrlModel = shModel,
+        //        history = historyResult,
+        //        alertMessage = message,
+        //        colorAlert = color
+        //    });
+        //}
     }
 }
+
+//var historyResult = ShortenCollection.Find(it => true).SortByDescending(it => it.CreationDateTime).ToList();
+//return View(new IndexViewModel
+//{
+//    shortUrlModel = data,
+//    alertMessage = model.alertMessage,
+//    colorAlert = model.colorAlert,
+//    history = historyResult
+//});
