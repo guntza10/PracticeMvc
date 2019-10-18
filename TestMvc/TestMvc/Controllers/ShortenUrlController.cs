@@ -15,16 +15,18 @@ namespace TestMvc.Controllers
         {
             var client = new MongoClient("mongodb://admin:mana1234@ds016098.mlab.com:16098/shortenurl?retryWrites=false");
             var database = client.GetDatabase("shortenurl");
-            ShortenCollection = database.GetCollection<ShortenUrlModel>("shorten");
+            ShortenCollection = database.GetCollection<ShortenUrlModel>("shorten2");
         }
 
         public IActionResult Index()
         {
+
             var historyResult = ShortenCollection.Find(it => true).SortByDescending(it => it.CreationDateTime).ToList();
             return View(new IndexViewModel
             {
                 history = historyResult,
-
+                alertMessage = "",
+                colorAlert = true
             });
         }
 
@@ -61,7 +63,7 @@ namespace TestMvc.Controllers
                 }
                 else if (isFullUrlExist.Any() && !String.IsNullOrEmpty(model.shortUrlModel.Custom))
                 {
-                    model.alertMessage = "Full Url be generated,can't generate!";
+                    model.alertMessage = "Full Url be generated,can't generate with custom!";
                     model.colorAlert = true;
                 }
                 else if (!isFullUrlExist.Any() && !String.IsNullOrEmpty(model.shortUrlModel.Custom))
@@ -141,6 +143,21 @@ namespace TestMvc.Controllers
             //return RedirectToAction("Index", new { shModel = data, message = model.alertMessage, color = model.colorAlert });
         }
 
+        public IActionResult DeleteUrl(string id)
+        {
+            ShortenCollection.DeleteOne(it => it.Id == id);
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public IActionResult EditModel([FromForm]ShortenUrlModel model)
+        {
+            return RedirectToAction("Index", new IndexViewModel
+            {
+                alertMessage = "",
+                shortUrlModel = new ShortenUrlModel()
+            });
+        }
         //public IActionResult Index(ShortenUrlModel shModel, string message, bool color)
         //{
         //    var historyResult = ShortenCollection.Find(it => true).SortByDescending(it => it.CreationDateTime).ToList();

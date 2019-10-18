@@ -13,4 +13,9 @@
     <PackageReference Include="MongoDB.Driver" Version="2.10.0-beta1" />
   </ItemGroup>
 
+
+  <ItemGroup>
+    <Folder Include="wwwroot\NewFolder\" />
+  </ItemGroup>
+
 </Project>

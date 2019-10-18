@@ -45,7 +45,7 @@
                 <div class="input-group m-2">
                     <input class="form-control" type="text" id="shortUrl" readonly="readonly" value="@Model.alertMessage" />
                     <div class="input-group-append">
-                        <button class="btn btn-success" type="button" onclick="copyUrl(shortUrl)">Copy Url</button>
+                        <button class="btn btn-success" type="button" onclick="copyUrl('shortUrl')">Copy Url</button>
                     </div>
                 </div>
             }
@@ -73,15 +73,90 @@
                         <tr>
                             <th> @item.FullUrl </th>
                             <td>
-                                <div class="input-group m-2">
+                                <div class="input-group">
                                     <input class="form-control" type="text" id="short-@item.Id" readonly="readonly" value="@item.ShortenUrl" />
                                     <div class="input-group-append">
-                                        <button class="btn btn-success" type="button" onclick="copyUrl(short-@item.Id)">Copy Url</button>
+                                        <button class="btn btn-success" type="button" onclick="copyUrl('short-@item.Id')">Copy Url</button>
                                     </div>
                                 </div>
                             </td>
-                            <td></td>
+                            <td>
+                                <div class="btn-group-sm ml-5">
+                                    <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#modal-@item.Id">
+                                        <img src="~/img/edit-black-36dp/1x/baseline_edit_black_36dp.png" />
+                                    </button>
+
+                                    <button type="button" class="btn btn-danger" onclick="location.href='@Url.Action("DeleteUrl","ShortenUrl",new { id = item.Id })'">
+                                        <img src="~/img/delete-black-36dp/1x/baseline_delete_black_36dp.png" />
+                                    </button>
+
+                                </div>
+                            </td>
                         </tr>
+
+                        //Modal
+                        <div class="modal fade" id="modal-@item.Id">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Edit</h5>
+                                        <button type="button" class="close" data-dismiss="modal">
+                                            <span>&times;</span>
+                                        </button>
+                                    </div>
+
+                                    <div class="modal-body">
+                                        <div class="row">
+                                            <div class="col-3">
+                                                <h5>Full Url :</h5>
+                                            </div>
+                                            <div class="col">
+                                                <label>@Html.Raw(item.FullUrl)</label>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-3">
+                                                <h5>Short Url :</h5>
+                                            </div>
+                                            <div class="col">
+                                                <label>@Html.Raw(item.ShortenUrl)</label>
+                                            </div>
+                                        </div>
+                                        <form asp-action="">
+                                            <input type="hidden" class="form-control" name="Id" value="@item.Id" />
+                                            <input type="hidden" class="form-control" name="FullUrl" value="@item.FullUrl" />
+                                            <input type="hidden" class="form-control" name="Custom" value="@item.Custom" />
+                                            <input type="hidden" class="form-control" name="CreationDateTime" value="@item.CreationDateTime" />
+                                            <input type="hidden" class="form-control" name="ShortenUrl" value="@item.ShortenUrl" />
+
+                                            <div class="form-group">
+                                                <div class="input-group-append">
+                                                    <div class="input-group-append">
+                                                        <span class="input-group-text">New Full Url</span>
+                                                    </div>
+                                                    <input type="text" class="form-control" name="newFullUrl" placeholder="new full url" />
+                                                </div>
+                                                <div class="input-group-append">
+                                                    <div class="input-group-append">
+                                                        <span class="input-group-text">https://testgun.azurewebsites.net/</span>
+                                                    </div>
+                                                    <input type="text" class="form-control" name="newCustom" placeholder="new custom url" />
+                                                </div>
+                                            </div>
+                                        </form>
+
+                                    </div>
+
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                                        <button type="button" class="btn btn-success">Confirm</button>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
                     }
                 </tbody>
             </table>
@@ -96,8 +171,9 @@
 
 @section Scripts {
     <script type="text/javascript">
-        function copyUrl(shortId) {
-            var copyText = document.getElementById(shortId.value);;
+        function copyUrl(url) {
+            //alert(url);
+            var copyText = document.getElementById(url);
             /* Select the text field */
             copyText.select();
             copyText.setSelectionRange(0, 99999); /*For mobile devices*/
