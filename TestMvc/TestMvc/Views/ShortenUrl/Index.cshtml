@@ -61,9 +61,16 @@
             <table class="table">
                 <thead class="thead-dark">
                     <tr>
-                        <th>Full Url</th>
-                        <th>Short Url</th>
-                        <th></th>
+                        <th>
+                            <div class="row align-items-center ">
+                                <div class="col-5">
+                                    Full Url
+                                </div>
+                                <div class="col-5">
+                                    Short Url
+                                </div>
+                            </div>
+                        </th>
                     </tr>
                 </thead>
 
@@ -71,24 +78,32 @@
                     @foreach (var item in Model.history)
                     {
                         <tr>
-                            <th> @item.FullUrl </th>
                             <td>
-                                <div class="input-group">
-                                    <input class="form-control" type="text" id="short-@item.Id" readonly="readonly" value="@item.ShortenUrl" />
-                                    <div class="input-group-append">
-                                        <button class="btn btn-success" type="button" onclick="copyUrl('short-@item.Id')">Copy Url</button>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="btn-group-sm ml-5">
-                                    <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#modal-@item.Id">
-                                        <img src="~/img/edit-black-36dp/1x/baseline_edit_black_36dp.png" />
-                                    </button>
+                                <div class="row align-items-center">
 
-                                    <button type="button" class="btn btn-danger" onclick="location.href='@Url.Action("DeleteUrl","ShortenUrl",new { id = item.Id })'">
-                                        <img src="~/img/delete-black-36dp/1x/baseline_delete_black_36dp.png" />
-                                    </button>
+                                    <div class="col-5">
+                                        @Html.Raw(item.FullUrl)
+                                    </div>
+
+                                    <div class="col-5">
+                                        <div class="input-group">
+                                            <input class="form-control" type="text" id="short-@item.Id" readonly="readonly" value="@item.ShortenUrl" />
+                                            <div class="input-group-append">
+                                                <button class="btn btn-success" type="button" onclick="copyUrl('short-@item.Id')">Copy</button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-2">
+                                        <div class="btn-group-sm">
+                                            <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#modal-@item.Id">
+                                                <img src="~/img/edit-black-36dp/1x/baseline_edit_black_36dp.png" />
+                                            </button>
+                                            <button type="button" class="btn btn-danger" onclick="location.href='@Url.Action("DeleteUrl","ShortenUrl",new { id = item.Id })'">
+                                                <img src="~/img/delete-black-36dp/1x/baseline_delete_black_36dp.png" />
+                                            </button>
+                                        </div>
+                                    </div>
 
                                 </div>
                             </td>
@@ -123,12 +138,7 @@
                                                 <label>@Html.Raw(item.ShortenUrl)</label>
                                             </div>
                                         </div>
-                                        <form asp-action="">
-                                            <input type="hidden" class="form-control" name="Id" value="@item.Id" />
-                                            <input type="hidden" class="form-control" name="FullUrl" value="@item.FullUrl" />
-                                            <input type="hidden" class="form-control" name="Custom" value="@item.Custom" />
-                                            <input type="hidden" class="form-control" name="CreationDateTime" value="@item.CreationDateTime" />
-                                            <input type="hidden" class="form-control" name="ShortenUrl" value="@item.ShortenUrl" />
+                                        <form asp-action="EditModel" asp-route-id="@item.Id" method="post">
 
                                             <div class="form-group">
                                                 <div class="input-group-append">
@@ -144,28 +154,29 @@
                                                     <input type="text" class="form-control" name="newCustom" placeholder="new custom url" />
                                                 </div>
                                             </div>
+
+                                            <div class="container-fluid">
+                                                <div class="row justify-content-end">
+                                                    <div class="col-2">
+                                                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                                                    </div>
+                                                    <div class="col-3">
+                                                        <button type="submit" class="btn btn-success">Confirm</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+
                                         </form>
 
                                     </div>
-
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
-                                        <button type="button" class="btn btn-success">Confirm</button>
-                                    </div>
-
                                 </div>
                             </div>
                         </div>
-
                     }
                 </tbody>
             </table>
-
         </div>
     </div>
-
-
-
 
 </div>
 
@@ -186,19 +197,3 @@
         }
     </script>
 }
-
-
-@*<script type="text/javascript">
-        function copyUrl12() {
-            var copyText = document.getElementById("#short-@item.Id");;
-            /* Select the text field */
-            copyText.select();
-            copyText.setSelectionRange(0, 99999); /*For mobile devices*/
-
-            /* Copy the text inside the text field */
-            document.execCommand("copy");
-
-            /* Alert the copied text */
-            alert(`Copied Url Already: ${copyText.value}`);
-        }
-    </script>*@

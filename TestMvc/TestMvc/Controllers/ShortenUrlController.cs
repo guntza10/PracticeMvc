@@ -20,7 +20,6 @@ namespace TestMvc.Controllers
 
         public IActionResult Index()
         {
-
             var historyResult = ShortenCollection.Find(it => true).SortByDescending(it => it.CreationDateTime).ToList();
             return View(new IndexViewModel
             {
@@ -54,7 +53,8 @@ namespace TestMvc.Controllers
                 var randomPrefix = Enumerable.Repeat(charT, 8)
                         .Select(it => it[rnd.Next(charT.Length)]);
                 var randomForShorten = String.Join("", randomPrefix);
-                var newUrl = (String.IsNullOrEmpty(model.shortUrlModel.Custom)) ? $"https://testgun.azurewebsites.net/{randomForShorten}"
+                var newUrl = (String.IsNullOrEmpty(model.shortUrlModel.Custom)) ?
+                    $"https://testgun.azurewebsites.net/{randomForShorten}"
                     : $"https://testgun.azurewebsites.net/{model.shortUrlModel.Custom}";
 
                 if (isFullUrlExist.Any() && String.IsNullOrEmpty(model.shortUrlModel.Custom))
@@ -70,7 +70,7 @@ namespace TestMvc.Controllers
                 {
                     try
                     {
-                        var isCustomExited = ShortenCollection.Find(it => it.ShortenUrl.ToLower().Contains(model.shortUrlModel.Custom.ToLower())).ToList();
+                        var isCustomExited = ShortenCollection.Find(it => it.ShortenUrl.Contains($"/{model.shortUrlModel.Custom}")).ToList();
                         if (!isCustomExited.Any())
                         {
                             var newData = new ShortenUrlModel
@@ -99,7 +99,7 @@ namespace TestMvc.Controllers
                 {
                     try
                     {
-                        var isCustomExited = ShortenCollection.Find(it => it.ShortenUrl.ToLower().Contains(randomForShorten.ToLower())).ToList();
+                        var isCustomExited = ShortenCollection.Find(it => it.ShortenUrl.Contains($"/{randomForShorten}")).ToList();
                         if (!isCustomExited.Any())
                         {
                             var newData = new ShortenUrlModel
@@ -149,14 +149,78 @@ namespace TestMvc.Controllers
             return RedirectToAction("Index");
         }
 
-        [HttpPost]
-        public IActionResult EditModel([FromForm]ShortenUrlModel model)
+        [HttpPost("{id}")]
+        public IActionResult EditModel(string id, string newFullUrl, string newCustom)
         {
-            return RedirectToAction("Index", new IndexViewModel
+            try
             {
-                alertMessage = "",
-                shortUrlModel = new ShortenUrlModel()
-            });
+                var fullUrl = "";
+                var shortUrl = "";
+                var custom = "";
+                var host = "https://testgun.azurewebsites.net/";
+
+                if (!String.IsNullOrEmpty(newFullUrl) && !String.IsNullOrEmpty(newCustom))
+                {
+                    if (!IsFullExist(newFullUrl) && !IsShortExist(newCustom))
+                    {
+                        fullUrl = newFullUrl;
+                        shortUrl = $"{host}{newCustom}";
+                        custom = newCustom;
+                        var defFullAndCustom = Builders<ShortenUrlModel>.Update
+                           .Set(it => it.FullUrl, fullUrl)
+                           .Set(it => it.ShortenUrl, shortUrl)
+                           .Set(it => it.Custom, custom)
+                           .Set(it => it.CreationDateTime, DateTime.Now);
+                        ShortenCollection.UpdateOne(it => it.Id == id, defFullAndCustom);
+                    }
+                }
+                else if (!String.IsNullOrEmpty(newFullUrl) && String.IsNullOrEmpty(newCustom))
+                {
+                    if (!IsFullExist(newFullUrl))
+                    {
+                        fullUrl = newFullUrl;
+                        var defFull = Builders<ShortenUrlModel>.Update
+                          .Set(it => it.FullUrl, fullUrl)
+                          .Set(it => it.CreationDateTime, DateTime.Now);
+                        ShortenCollection.UpdateOne(it => it.Id == id, defFull);
+                    }
+                }
+                else if (String.IsNullOrEmpty(newFullUrl) && !String.IsNullOrEmpty(newCustom))
+                {
+                    if (!IsShortExist(newCustom))
+                    {
+                        shortUrl = $"{host}{newCustom}";
+                        custom = newCustom;
+                        var defCustom = Builders<ShortenUrlModel>.Update
+                          .Set(it => it.ShortenUrl, shortUrl)
+                          .Set(it => it.Custom, custom)
+                          .Set(it => it.CreationDateTime, DateTime.Now);
+                        ShortenCollection.UpdateOne(it => it.Id == id, defCustom);
+                    }
+                }
+                else
+                {
+                    return RedirectToAction("Index");
+                }
+                return RedirectToAction("Index");
+            }
+            catch (Exception err)
+            {
+                throw err;
+            }
+
+        }
+
+        public bool IsFullExist(string fullUrl)
+        {
+            var qry = ShortenCollection.Find(it => it.FullUrl == fullUrl).ToList();
+            return (qry.Any()) ? true : false;
+        }
+
+        public bool IsShortExist(string shortUrl)
+        {
+            var qry = ShortenCollection.Find(it => it.ShortenUrl.Contains($"/{shortUrl}")).ToList();
+            return (qry.Any()) ? true : false;
         }
         //public IActionResult Index(ShortenUrlModel shModel, string message, bool color)
         //{
