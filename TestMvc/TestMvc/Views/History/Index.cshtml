@@ -1,0 +1,151 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@model List<TestMvc.Models.ShortenUrlModel>
+
+<div class="card mt-3">
+    <div class="card-header">
+        <h3>History</h3>
+    </div>
+    <div class="card-body">
+
+        <table class="table">
+            <thead class="thead-dark">
+                <tr>
+                    <th>
+                        <div class="row align-items-center ">
+                            <div class="col-5">
+                                Full Url
+                            </div>
+                            <div class="col-5">
+                                Short Url
+                            </div>
+                        </div>
+                    </th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            <div class="row align-items-center">
+
+                                <div class="col-5">
+                                    @Html.Raw(item.FullUrl)
+                                </div>
+
+                                <div class="col-5">
+                                    <div class="input-group">
+                                        <input class="form-control" type="text" id="short-@item.Id" readonly="readonly" value="@item.ShortenUrl" />
+                                        <div class="input-group-append">
+                                            <button class="btn btn-success" type="button" onclick="copyUrl('short-@item.Id')">Copy</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-2">
+                                    <div class="btn-group-sm">
+                                        <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#modal-@item.Id">
+                                            <img src="~/img/edit-black-36dp/1x/baseline_edit_black_36dp.png" />
+                                        </button>
+                                        <button type="button" class="btn btn-danger" onclick="location.href='@Url.Action("DeleteUrl","History",new { id = item.Id })'">
+                                            <img src="~/img/delete-black-36dp/1x/baseline_delete_black_36dp.png" />
+                                        </button>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </td>
+                    </tr>
+
+                    //Modal
+                    <div class="modal fade" id="modal-@item.Id">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Edit</h5>
+                                    <button type="button" class="close" data-dismiss="modal">
+                                        <span>&times;</span>
+                                    </button>
+                                </div>
+
+                                <div class="modal-body">
+                                    <div class="row">
+                                        <div class="col-3">
+                                            <h5>Full Url :</h5>
+                                        </div>
+                                        <div class="col">
+                                            <label>@Html.Raw(item.FullUrl)</label>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-3">
+                                            <h5>Short Url :</h5>
+                                        </div>
+                                        <div class="col">
+                                            <label>@Html.Raw(item.ShortenUrl)</label>
+                                        </div>
+                                    </div>
+                                    <form asp-controller="History" asp-action="EditModel" asp-route-id="@item.Id" method="post">
+
+                                        <div class="form-group">
+                                            <div class="input-group-append">
+                                                <div class="input-group-append">
+                                                    <span class="input-group-text">New Full Url</span>
+                                                </div>
+                                                <input type="text" class="form-control" name="newFullUrl" placeholder="new full url" />
+                                            </div>
+                                            <div class="input-group-append">
+                                                <div class="input-group-append">
+                                                    <span class="input-group-text">https://testgun.azurewebsites.net/</span>
+                                                </div>
+                                                <input type="text" class="form-control" name="newCustom" placeholder="new custom url" />
+                                            </div>
+                                        </div>
+
+                                        <div class="container-fluid">
+                                            <div class="row justify-content-end">
+                                                <div class="col-2">
+                                                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                                                </div>
+                                                <div class="col-3">
+                                                    <button type="submit" class="btn btn-success">Confirm</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </form>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript">
+        function copyUrl(url) {
+            //alert(url);
+            var copyText = document.getElementById(url);
+            /* Select the text field */
+            copyText.select();
+            copyText.setSelectionRange(0, 99999); /*For mobile devices*/
+
+            /* Copy the text inside the text field */
+            document.execCommand("copy");
+
+            /* Alert the copied text */
+            alert(`Copied Url Already: ${copyText.value}`);
+        }
+    </script>
+}
+

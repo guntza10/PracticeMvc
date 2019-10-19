@@ -11,7 +11,7 @@
         <h1>Generate Shorten Url</h1>
     </div>
 
-    <form class="mt-5" asp-action="Index">
+    <form class="mt-5" asp-controller="ShortenUrl" asp-action="Index">
         <div class="input-group-text">
             <div class="input-group-append">
                 <span class="input-group-text">FullUrl</span>
@@ -52,7 +52,7 @@
         </div>
     </div>
 
-    <div class="card mt-3">
+    @*<div class="card mt-3">
         <div class="card-header">
             <h3>History</h3>
         </div>
@@ -138,7 +138,7 @@
                                                 <label>@Html.Raw(item.ShortenUrl)</label>
                                             </div>
                                         </div>
-                                        <form asp-action="EditModel" asp-route-id="@item.Id" method="post">
+                                        <form asp-controller="ShortenUrl" asp-action="EditModel" asp-route-id="@item.Id" method="post">
 
                                             <div class="form-group">
                                                 <div class="input-group-append">
@@ -176,7 +176,7 @@
                 </tbody>
             </table>
         </div>
-    </div>
+    </div>*@
 
 </div>
 
