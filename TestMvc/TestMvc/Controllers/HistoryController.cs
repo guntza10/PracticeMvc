@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
 using TestMvc.Models;
+using X.PagedList;
 
 namespace TestMvc.Controllers
 {
@@ -18,10 +19,30 @@ namespace TestMvc.Controllers
             ShortenCollection = database.GetCollection<ShortenUrlModel>("shorten2");
         }
 
-        public IActionResult Index()
+        //public IActionResult Index()
+        //{
+        //    var historyResult = ShortenCollection.Find(it => true).SortByDescending(it => it.CreationDateTime).ToList();
+        //    return View(historyResult);
+        //}
+
+        public IActionResult Index(int? page, string search)
         {
-            var historyResult = ShortenCollection.Find(it => true).SortByDescending(it => it.CreationDateTime).ToList();
-            return View(historyResult);
+            int pageSize = 10;
+            int pageNumber = (page ?? 1);
+            var shortenUrl = ShortenCollection.Find(it => true)
+             .SortByDescending(it => it.CreationDateTime)
+             //.Skip((pageNumber-1)* pageSize)
+             //.Limit(pageSize)
+             .ToList();
+            if (!String.IsNullOrEmpty(search))
+            {
+                var allHistory = ShortenCollection.Find(it => it.FullUrl.Contains(search)
+                 || it.ShortenUrl.Contains(search))
+                .SortByDescending(it => it.CreationDateTime)
+                .ToList();
+                return View(allHistory.ToPagedList(pageNumber, pageSize));
+            }
+            return View(shortenUrl.ToPagedList(pageNumber, pageSize));
         }
 
         public IActionResult DeleteUrl(string id)

@@ -3,7 +3,19 @@
     ViewData["Title"] = "Index";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-@model List<TestMvc.Models.ShortenUrlModel>
+
+@model IPagedList<TestMvc.Models.ShortenUrlModel>
+@using X.PagedList.Mvc.Core;
+@using X.PagedList;
+
+<form asp-controller="History" asp-action="Index" method="get">
+    <div class="input-group-text">
+        <input type="text" class="form-control" placeholder="search" name="search" />
+        <div class="input-group-append">
+            <button type="submit" class="btn btn-primary">Search</button>
+        </div>
+    </div>
+</form>
 
 <div class="card mt-3">
     <div class="card-header">
@@ -130,6 +142,15 @@
         </table>
     </div>
 </div>
+
+@Html.PagedListPager(Model, page => Url.Action("Index",
+        new { page, sortOrder = ViewBag.CurrentSort, currentFilter = ViewBag.CurrentFilter }),
+        new X.PagedList.Mvc.Common.PagedListRenderOptionsBase
+        {
+            PageClasses = new string[] { "page-link" },
+            UlElementClasses = new string[] { "pagination" },
+            LiElementClasses = new string[] { "page-item" },
+        })
 
 @section Scripts {
     <script type="text/javascript">
